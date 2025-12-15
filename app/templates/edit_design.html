@@ -19,6 +19,15 @@
                     style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main); font-family: inherit;">{{ design.description }}</textarea>
             </div>
 
+            <div style="margin-bottom: 1.5rem;">
+                <label for="hashtags" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Hashtags</label>
+                <input type="text" id="hashtags" name="hashtags" value="{{ design.hashtags or '' }}"
+                    placeholder="#平面 #3D #搞笑"
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+                <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">Separate tags with
+                    spaces.</p>
+            </div>
+
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn btn-primary" style="flex-grow: 1;">Update Design</button>
                 <a href="{{ url_for('main.design_detail', public_id=design.public_id) }}" class="btn"

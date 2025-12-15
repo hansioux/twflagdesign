@@ -23,6 +23,17 @@
                         <span>{{ design.created_at.strftime('%B %d, %Y') }}</span>
                     </div>
 
+                    {% if design.hashtags %}
+                    <div style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        {% for tag in design.hashtags.split() %}
+                        <a href="{{ url_for('main.index', q=tag) }}"
+                            style="color: var(--color-accent); font-size: 0.875rem; text-decoration: none; padding: 0.25rem 0.5rem; background: #e0f2fe; border-radius: 999px;">
+                            {{ tag }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">Description & Symbolism</h3>
                     <p style="line-height: 1.7; color: var(--color-text-main); white-space: pre-wrap;">{{
                         design.description | format_content }}</p>

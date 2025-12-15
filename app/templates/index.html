@@ -4,9 +4,33 @@
 <div style="text-align: center; margin-bottom: 3rem;">
     <h1 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 1rem; color: var(--color-primary);">TW
         Flag Design Gallery</h1>
-    <p style="color: var(--color-text-muted); max-width: 600px; margin: 0 auto;">
-        Browse and rate the submitted designs for the new flag. Your voice matters in shaping our nation's identity.
-    </p>
+    <div
+        style="margin: 0 auto; max-width: 600px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
+        {% for tag, count in top_tags %}
+        <a href="{{ url_for('main.index', q=tag) }}"
+            style="text-decoration: none; color: var(--color-primary); background: #e0f2fe; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.9rem; font-weight: 500; transition: background 0.2s;">
+            {{ tag }} <span style="font-size: 0.8em; opacity: 0.7;">({{ count }})</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Search Bar -->
+    <div style="margin-top: 2rem; display: flex; justify-content: center;">
+        <form action="{{ url_for('main.index') }}" method="GET"
+            style="display: flex; max-width: 500px; width: 100%; gap: 0.5rem;">
+            <input type="text" name="q" placeholder="Search by title, description, or #hashtags"
+                value="{{ search_query or '' }}"
+                style="flex-grow: 1; padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+            <button type="submit" class="btn btn-primary"
+                style="display: flex; align-items: center; justify-content: center; padding: 0 1.25rem;">
+                <span style="font-size: 1.2rem;">🔍</span>
+            </button>
+            {% if search_query %}
+            <a href="{{ url_for('main.index') }}" class="btn"
+                style="background: var(--color-border); color: var(--color-text-main); display: flex; align-items: center;">Clear</a>
+            {% endif %}
+        </form>
+    </div>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">

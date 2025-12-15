@@ -1,13 +1,16 @@
 import os
 import uuid
 import re
+from collections import Counter
 from flask import render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
 from app.main import bp
 from app.models import Design, Comment, Rating, Post, User
+from app.models import Design, Comment, Rating, Post, User
 from flask import abort
+from sqlalchemy import or_
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -25,8 +28,30 @@ def format_content(text):
 
 @bp.route('/')
 def index():
-    designs = Design.query.filter_by(approved=True).order_by(Design.created_at.desc()).all()
-    return render_template('index.html', designs=designs)
+    q = request.args.get('q')
+    query = Design.query.filter_by(approved=True)
+    
+    if q:
+        search_term = f"%{q}%"
+        query = query.filter(or_(
+            Design.title.ilike(search_term),
+            Design.description.ilike(search_term),
+            Design.hashtags.ilike(search_term)
+        ))
+        
+    designs = query.order_by(Design.created_at.desc()).all()
+    
+    # Calculate top hashtags from all approved designs
+    all_designs = Design.query.filter_by(approved=True).all()
+    tag_counts = Counter()
+    for d in all_designs:
+        if d.hashtags:
+            tags = d.hashtags.lower().split()
+            tag_counts.update(tags)
+            
+    top_tags = tag_counts.most_common(5)
+    
+    return render_template('index.html', designs=designs, search_query=q, top_tags=top_tags)
 
 @bp.route('/submit', methods=['GET', 'POST'])
 @login_required
@@ -52,11 +77,16 @@ def submit():
             save_path = os.path.join(current_app.root_path, 'static/uploads', unique_filename)
             file.save(save_path)
             
+            file.save(save_path)
+            
             public_id = str(uuid.uuid4())
+            hashtags = request.form.get('hashtags')
+            
             design = Design(
                 title=title, 
                 description=desc, 
                 image_filename=unique_filename,
+                hashtags=hashtags,
                 public_id=public_id,
                 author=current_user,
                 approved=True # Auto-approve for MVP
@@ -123,7 +153,7 @@ def design_detail(public_id):
 @bp.route('/discuss', methods=['GET', 'POST'])
 def discuss():
     # Admin defined subjects
-    subjects = ['General', 'Design Feedback', 'Voting Process', 'Symbolism']
+    subjects = ['General', 'Design Feedback', 'Voting Process', 'Symbolism', 'Past Designs', 'Colonial Flags']
     
     if request.method == 'POST':
         if not current_user.is_authenticated:
@@ -201,9 +231,11 @@ def edit_design(public_id):
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
+        hashtags = request.form.get('hashtags')
         
         design.title = title
         design.description = description
+        design.hashtags = hashtags
         db.session.commit()
         
         flash('Design updated successfully.', 'success')
@@ -220,7 +252,7 @@ def edit_post(post_id):
         abort(403)
         
     # Subjects list for dropdown
-    subjects = ['General', 'Design Feedback', 'Voting Process', 'Symbolism']
+    subjects = ['General', 'Design Feedback', 'Voting Process', 'Symbolism', 'Past Designs', 'Colonial Flags']
 
     if request.method == 'POST':
         post.title = request.form.get('title')
