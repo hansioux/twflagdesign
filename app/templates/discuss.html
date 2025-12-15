@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <div style="display: flex; gap: 2rem;">
+        <!-- Sidebar Filters -->
+        <aside style="width: 250px; flex-shrink: 0;">
+            <div class="card" style="padding: 1.5rem; position: sticky; top: 6rem;">
+                <h3 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 1rem;">Filter by Subject
+                </h3>
+                <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="{{ url_for('main.discuss') }}" style="color: var(--color-text-main); font-weight: 500;">All
+                        Posts</a>
+                    {% for subject in subjects %}
+                    <a href="{{ url_for('main.discuss', subject=subject) }}"
+                        style="color: var(--color-text-muted); padding: 0.25rem 0;">{{ subject }}</a>
+                    {% endfor %}
+                </nav>
+
+                <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--color-border);">
+
+                <h3 style="font-family: var(--font-heading); font-size: 1.1rem; margin-bottom: 1rem;">Admin</h3>
+                <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="{{ url_for('main.discuss', filter='announcement') }}"
+                        style="color: var(--color-accent); font-weight: 500;">Announcements</a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div style="flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h1 style="font-family: var(--font-heading); margin: 0;">Discussion Board</h1>
+                {% if current_user.is_authenticated %}
+                <button onclick="document.getElementById('postForm').style.display = 'block'" class="btn btn-primary">
+                    New Post
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- New Post Form (Hidden by default) -->
+            <div id="postForm" class="card" style="padding: 1.5rem; margin-bottom: 2rem; display: none;">
+                <h3 style="margin-bottom: 1rem;">Create a Post</h3>
+                <form method="POST">
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" name="title" placeholder="Title" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+
+                        <textarea name="content" placeholder="Write your post content here..." required rows="6"
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main); font-family: var(--font-sans); resize: vertical;"></textarea>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <select name="subject" required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+                            {% for subject in subjects %}
+                            <option value="{{ subject }}">{{ subject }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if current_user.is_admin %}
+                    <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="is_announcement" name="is_announcement" value="yes">
+                        <label for="is_announcement" style="font-weight: 500; color: var(--color-accent);">Post as
+                            Announcement</label>
+                    </div>
+                    {% endif %}
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary">Publish</button>
+                        <button type="button" onclick="document.getElementById('postForm').style.display = 'none'"
+                            class="btn" style="background: var(--color-border);">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Posts List -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                {% for post in posts %}
+                <div class="card"
+                    style="padding: 1.5rem; {% if post.post_type == 'announcement' %} border-left: 4px solid var(--color-accent); {% endif %}">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span
+                            style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: {{ 'var(--color-accent)' if post.post_type == 'announcement' else 'var(--color-text-muted)' }}; font-weight: 700;">
+                            {{ post.subject or 'General' }}
+                            {% if post.post_type == 'announcement' %} &bull; Announcement {% endif %}
+                        </span>
+                        <span style="font-size: 0.8rem; color: var(--color-text-muted);">{{
+                            post.created_at.strftime('%Y-%m-%d') }}</span>
+                    </div>
+
+                    <h2 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.75rem;">{{
+                        post.title }}</h2>
+                    <p
+                        style="color: var(--color-text-main); margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">
+                        {{ post.content | format_content }}</p>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <img src="{{ post.author.profile_pic or 'https://via.placeholder.com/24' }}" alt=""
+                                style="width: 24px; height: 24px; border-radius: 50%;">
+                            <span style="font-size: 0.875rem; font-weight: 500;">{{ post.author.name }}</span>
+                        </div>
+
+                        {% if current_user.is_authenticated and (current_user == post.author or current_user.is_admin)
+                        %}
+                        <a href="{{ url_for('main.edit_post', post_id=post.id) }}"
+                            style="font-size: 0.875rem; color: var(--color-accent);">Edit Post</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <p style="text-align: center; color: var(--color-text-muted);">No posts found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

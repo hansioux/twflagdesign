@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 1rem; color: var(--color-primary);">TW
+        Flag Design Gallery</h1>
+    <p style="color: var(--color-text-muted); max-width: 600px; margin: 0 auto;">
+        Browse and rate the submitted designs for the new flag. Your voice matters in shaping our nation's identity.
+    </p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+    {% for design in designs %}
+    <div class="card">
+        <div style="aspect-ratio: 16/9; background-color: #f1f5f9; overflow: hidden;">
+            <a href="{{ url_for('main.design_detail', public_id=design.public_id) }}"
+                style="display: block; width: 100%; height: 100%;">
+                <img src="{{ url_for('static', filename='uploads/' + design.image_filename) }}" alt="{{ design.title }}"
+                    style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+            </a>
+        </div>
+        <div style="padding: 1.5rem;">
+            <h3 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: 0.5rem;">{{ design.title }}
+            </h3>
+            <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: 1rem; line-height: 1.6;">{{
+                design.description|truncate(100) }}</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <a href="{{ url_for('main.design_detail', public_id=design.public_id) }}"
+                    style="color: var(--color-accent); font-weight: 500; font-size: 0.875rem;">View Details
+                    &rarr;</a>
+                <span style="font-size: 0.875rem; color: var(--color-text-muted);">
+                    By {{ design.author.name }}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--color-text-muted);">
+        <p>No designs have been approved yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

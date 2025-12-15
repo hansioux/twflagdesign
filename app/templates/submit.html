@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card" style="padding: 2rem;">
+        <h1 style="font-family: var(--font-heading); margin-bottom: 2rem; color: var(--color-primary);">Submit Your
+            Design</h1>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div style="margin-bottom: 1.5rem;">
+                <label for="title" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Title</label>
+                <input type="text" id="title" name="title" required
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background);">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description &
+                    Symbolism</label>
+                <textarea id="description" name="description" rows="5" required
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); font-family: inherit;"></textarea>
+                <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">Explain the elements
+                    of your design and what they represent.</p>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label for="image" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Upload Image</label>
+                <div
+                    style="border: 2px dashed var(--color-border); padding: 2rem; text-align: center; border-radius: var(--radius-md);">
+                    <input type="file" id="image" name="image" accept="image/*" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Design</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

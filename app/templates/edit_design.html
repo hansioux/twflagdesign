@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card" style="padding: 2rem;">
+        <h1 style="font-family: var(--font-heading); margin-bottom: 2rem; color: var(--color-primary);">Edit Design</h1>
+
+        <form method="POST">
+            <div style="margin-bottom: 1.5rem;">
+                <label for="title" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Title</label>
+                <input type="text" id="title" name="title" required value="{{ design.title }}"
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label for="description" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description &
+                    Symbolism</label>
+                <textarea id="description" name="description" rows="8" required
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main); font-family: inherit;">{{ design.description }}</textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" style="flex-grow: 1;">Update Design</button>
+                <a href="{{ url_for('main.design_detail', public_id=design.public_id) }}" class="btn"
+                    style="background: var(--color-border); color: var(--color-text-main);">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

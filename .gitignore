@@ -1,0 +1,16 @@
+# Logs
+*.log
+
+# Python cache
+__pycache__/
+*.py[co]
+
+# Environment
+venv/
+
+# Google Plus backup
+gplus/
+
+# Google Cloud credentials
+start_app_cred.sh
+app/auth/gcloud.json 

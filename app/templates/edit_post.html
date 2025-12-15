@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card" style="padding: 2rem;">
+        <h1 style="font-family: var(--font-heading); margin-bottom: 2rem; color: var(--color-primary);">Edit Post</h1>
+
+        <form method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label for="title" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Title</label>
+                <input type="text" name="title" id="title" placeholder="Title" required value="{{ post.title }}"
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label for="content" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Content</label>
+                <textarea name="content" id="content" placeholder="Write your post content here..." required rows="10"
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main); font-family: var(--font-sans); resize: vertical;">{{ post.content }}</textarea>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label for="subject" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Subject</label>
+                <select name="subject" id="subject" required
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+                    {% for subject in subjects %}
+                    <option value="{{ subject }}" {% if post.subject==subject %}selected{% endif %}>{{ subject }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if current_user.is_admin %}
+            <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="is_announcement" name="is_announcement" value="yes" {% if
+                    post.post_type=='announcement' %}checked{% endif %}>
+                <label for="is_announcement" style="font-weight: 500; color: var(--color-accent);">Post as
+                    Announcement</label>
+            </div>
+            {% endif %}
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" style="flex-grow: 1;">Update Post</button>
+                <a href="{{ url_for('main.discuss') }}" class="btn"
+                    style="background: var(--color-border); color: var(--color-text-main);">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
