@@ -5,7 +5,7 @@
     <div class="card" style="padding: 2rem;">
         <h1 style="font-family: var(--font-heading); margin-bottom: 2rem; color: var(--color-primary);">Edit Design</h1>
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <div style="margin-bottom: 1.5rem;">
                 <label for="title" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Title</label>
                 <input type="text" id="title" name="title" required value="{{ design.title }}"
@@ -28,12 +28,77 @@
                     spaces.</p>
             </div>
 
+            <!-- Image Upload Section -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Design Image</label>
+
+                {% if design.image_filename %}
+                <div
+                    style="margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--color-text-muted);">Current Design:
+                    </p>
+                    <img src="{{ url_for('static', filename='uploads/' + design.image_filename) }}" alt="Current Design"
+                        style="max-height: 200px; max-width: 100%; display: block; margin-bottom: 0.5rem;">
+
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="remove_image" name="remove_image" value="yes">
+                        <label for="remove_image" style="color: var(--color-accent); font-size: 0.9rem;">Remove this
+                            image (Warning: Submissions usually need an image)</label>
+                    </div>
+                </div>
+                {% endif %}
+
+                <label for="image" style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem;">Upload New Version
+                    (Optional)</label>
+                <input type="file" name="image" id="image" accept="image/*"
+                    style="width: 100%; padding: 0.5rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+                <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">Uploading a new image
+                    will replace the existing one.</p>
+            </div>
+
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn btn-primary" style="flex-grow: 1;">Update Design</button>
                 <a href="{{ url_for('main.design_detail', public_id=design.public_id) }}" class="btn"
                     style="background: var(--color-border); color: var(--color-text-main);">Cancel</a>
             </div>
         </form>
+
+        {% if current_user.is_admin %}
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--color-border);">
+            <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--color-primary); margin-bottom: 1rem;">Admin
+                Actions</h3>
+            <div
+                style="background: var(--color-background); padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+                <form action="{{ url_for('main.convert_design_to_post', public_id=design.public_id) }}" method="POST">
+                    <div id="convert-initial">
+                        <button type="button" class="btn"
+                            style="background-color: #7c3aed; color: #ffffff; width: 100%; font-weight: bold;"
+                            onclick="document.getElementById('convert-initial').style.display='none'; document.getElementById('convert-confirm-ui').style.display='block';">
+                            Convert to Discussion Post
+                        </button>
+                    </div>
+                    <div id="convert-confirm-ui"
+                        style="display: none; background: var(--color-background-muted); padding: 1rem; border-radius: var(--radius-md);">
+                        <p style="color: var(--color-danger); font-weight: bold; margin-bottom: 0.5rem;">Are you sure?
+                        </p>
+                        <p style="font-size: 0.9rem; margin-bottom: 1rem;">This will delete the Design entry and create
+                            a Discussion Post. Ratings will be lost. Comments will be moved.</p>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="submit" class="btn"
+                                style="background-color: var(--color-danger); color: white; flex: 1;">Yes,
+                                Convert</button>
+                            <button type="button" class="btn" style="background-color: var(--color-border); flex: 1;"
+                                onclick="document.getElementById('convert-confirm-ui').style.display='none'; document.getElementById('convert-initial').style.display='block';">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <p style="font-size: 0.8rem; color: var(--color-text-main); margin-top: 0.5rem; font-weight: 500;">This
+                    will change this design submission into a general discussion post.</p>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

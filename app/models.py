@@ -46,6 +46,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     post_type = db.Column(db.String(20), nullable=False) # 'announcement' or 'discussion'
     subject = db.Column(db.String(50), nullable=True)
+    image_filename = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     

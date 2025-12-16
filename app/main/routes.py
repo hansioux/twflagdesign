@@ -167,7 +167,17 @@ def discuss():
         if current_user.is_admin and request.form.get('is_announcement') == 'yes':
             post_type = 'announcement'
         
-        post = Post(title=title, content=content, subject=subject, post_type=post_type, author=current_user)
+        image_filename = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                save_path = os.path.join(current_app.root_path, 'static/uploads', unique_filename)
+                file.save(save_path)
+                image_filename = unique_filename
+        
+        post = Post(title=title, content=content, subject=subject, post_type=post_type, image_filename=image_filename, author=current_user)
         db.session.add(post)
         db.session.commit()
         flash('Post created!', 'success')
@@ -236,6 +246,31 @@ def edit_design(public_id):
         design.title = title
         design.description = description
         design.hashtags = hashtags
+        
+        # Image handling
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename != '' and allowed_file(file.filename):
+                # Delete old image if exists
+                if design.image_filename:
+                    old_path = os.path.join(current_app.root_path, 'static/uploads', design.image_filename)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                
+                # Save new
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                save_path = os.path.join(current_app.root_path, 'static/uploads', unique_filename)
+                file.save(save_path)
+                design.image_filename = unique_filename
+        
+        elif request.form.get('remove_image') == 'yes':
+             if design.image_filename:
+                old_path = os.path.join(current_app.root_path, 'static/uploads', design.image_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                design.image_filename = None
+
         db.session.commit()
         
         flash('Design updated successfully.', 'success')
@@ -266,11 +301,126 @@ def edit_post(post_id):
              else:
                  post.post_type = 'discussion'
                  
+        # Image handling
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename != '' and allowed_file(file.filename):
+                # Delete old image if exists
+                if post.image_filename:
+                    old_path = os.path.join(current_app.root_path, 'static/uploads', post.image_filename)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                
+                # Save new
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                save_path = os.path.join(current_app.root_path, 'static/uploads', unique_filename)
+                file.save(save_path)
+                post.image_filename = unique_filename
+        
+        elif request.form.get('remove_image') == 'yes':
+             if post.image_filename:
+                old_path = os.path.join(current_app.root_path, 'static/uploads', post.image_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                post.image_filename = None
+
         db.session.commit()
         flash('Post updated.', 'success')
         return redirect(url_for('main.discuss'))
         
     return render_template('edit_post.html', post=post, subjects=subjects)
+
+@bp.route('/post/<int:post_id>/convert', methods=['POST'])
+@login_required
+def convert_post_to_design(post_id):
+    print(f"DEBUG: Convert route hit for post_id={post_id}")
+    if not current_user.is_admin:
+        print("DEBUG: Access denied (not admin)")
+        abort(403)
+        
+    post = Post.query.get_or_404(post_id)
+    
+    if not post.image_filename:
+        flash('Cannot convert post to design: Post must have an image.', 'error')
+        return redirect(url_for('main.edit_post', post_id=post.id))
+        
+    # Create Design
+    design = Design(
+        public_id=str(uuid.uuid4()),
+        title=post.title,
+        description=post.content,
+        image_filename=post.image_filename,
+        author=post.author,
+        created_at=post.created_at,
+        approved=True # Admin action implies approval
+    )
+    db.session.add(design)
+    db.session.flush() # Get ID
+    
+    # Move comments
+    for comment in post.comments:
+        comment.post_id = None
+        comment.design_id = design.id
+        
+    # Delete post (prevent image deletion since it's now used by Design)
+    # We need to detach image from post before deleting, OR rely on the fact we just copied the filename string.
+    # But delete_post logic might try to delete the file!
+    # Let's check delete_post logic.
+    # Actually we are not calling delete_post route, we are doing db.session.delete(post).
+    # Does Post model have cascade delete that removes file?
+    # No, file deletion is manual in delete_post route.
+    # So db.session.delete(post) is safe for the file.
+    
+    db.session.delete(post)
+    db.session.commit()
+    
+    flash('Post successfully converted to Design.', 'success')
+    return redirect(url_for('main.design_detail', public_id=design.public_id))
+
+@bp.route('/design/<public_id>/convert', methods=['POST'])
+@login_required
+def convert_design_to_post(public_id):
+    print(f"DEBUG: Convert Design route hit for public_id={public_id}")
+    if not current_user.is_admin:
+        print("DEBUG: Access denied (not admin)")
+        abort(403)
+        
+    design = Design.query.filter_by(public_id=public_id).first_or_404()
+    
+    # Create Post
+    # Append hashtags to description if they exist, as posts don't have separate hashtags field
+    content = design.description
+    if design.hashtags:
+        content += f"\n\n{design.hashtags}"
+        
+    post = Post(
+        title=design.title,
+        content=content,
+        post_type='discussion',
+        subject='General',
+        image_filename=design.image_filename,
+        author=design.author,
+        created_at=design.created_at
+    )
+    db.session.add(post)
+    db.session.flush() # Get ID
+    
+    # Move comments
+    for comment in design.comments:
+        comment.design_id = None
+        comment.post_id = post.id
+        
+    # Delete Ratings (Posts don't support ratings)
+    for rating in design.ratings:
+        db.session.delete(rating)
+        
+    # Delete Design
+    db.session.delete(design)
+    db.session.commit()
+    
+    flash('Design successfully converted to Discussion Post.', 'success')
+    return redirect(url_for('main.discuss'))
 
 @bp.route('/comment/<int:comment_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -293,3 +443,79 @@ def edit_comment(comment_id):
         return redirect(url_for('main.index'))
         
     return render_template('edit_comment.html', comment=comment)
+
+@bp.route('/design/<public_id>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_design(public_id):
+    design = Design.query.filter_by(public_id=public_id).first_or_404()
+    if design.author != current_user and not current_user.is_admin:
+        abort(403)
+        
+    if request.method == 'GET':
+        return render_template('confirm_delete.html', 
+                             item_type="Design", 
+                             item_title=design.title, 
+                             cancel_url=url_for('main.design_detail', public_id=public_id))
+        
+    # Delete image file if exists
+    if design.image_filename:
+        image_path = os.path.join(current_app.root_path, 'static/uploads', design.image_filename)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+            
+    # Delete associated comments and ratings
+    Comment.query.filter_by(design_id=design.id).delete()
+    Rating.query.filter_by(design_id=design.id).delete()
+    
+    db.session.delete(design)
+    db.session.commit()
+    flash('Design deleted.', 'success')
+    return redirect(url_for('main.index'))
+
+@bp.route('/post/<int:post_id>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user and not current_user.is_admin:
+        abort(403)
+        
+    if request.method == 'GET':
+        return render_template('confirm_delete.html', 
+                             item_type="Post", 
+                             item_title=post.title, 
+                             cancel_url=url_for('main.discuss'))
+        
+    if post.image_filename:
+         image_path = os.path.join(current_app.root_path, 'static/uploads', post.image_filename)
+         if os.path.exists(image_path):
+             os.remove(image_path)
+             
+    Comment.query.filter_by(post_id=post.id).delete()
+    db.session.delete(post)
+    db.session.commit()
+    flash('Post deleted.', 'success')
+    return redirect(url_for('main.discuss'))
+
+@bp.route('/comment/<int:comment_id>/delete', methods=['GET', 'POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.author != current_user and not current_user.is_admin:
+        abort(403)
+        
+    design_public_id = comment.design.public_id if comment.design else None
+    cancel_url = url_for('main.design_detail', public_id=design_public_id) if design_public_id else url_for('main.discuss')
+    
+    if request.method == 'GET':
+        return render_template('confirm_delete.html', 
+                             item_type="Comment", 
+                             item_title=None, 
+                             cancel_url=cancel_url)
+    
+    db.session.delete(comment)
+    db.session.commit()
+    flash('Comment deleted.', 'success')
+    
+    if design_public_id:
+        return redirect(url_for('main.design_detail', public_id=design_public_id))
+    return redirect(url_for('main.discuss'))

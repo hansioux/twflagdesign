@@ -5,10 +5,10 @@
     <h1 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 1rem; color: var(--color-primary);">TW
         Flag Design Gallery</h1>
     <div
-        style="margin: 0 auto; max-width: 600px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
+        style="margin: 0 auto; max-width: 800px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
         {% for tag, count in top_tags %}
         <a href="{{ url_for('main.index', q=tag) }}"
-            style="text-decoration: none; color: var(--color-primary); background: #e0f2fe; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.9rem; font-weight: 500; transition: background 0.2s;">
+            style="text-decoration: none; color: #0f172a; background: #e0f2fe; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.9rem; font-weight: 500; transition: background 0.2s;">
             {{ tag }} <span style="font-size: 0.8em; opacity: 0.7;">({{ count }})</span>
         </a>
         {% endfor %}

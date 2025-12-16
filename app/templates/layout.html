@@ -124,7 +124,7 @@
 
             {% if current_user.is_authenticated and current_user.is_admin %}
             <a href="{{ url_for('main.admin_users') }}" class="btn"
-                style="justify-content: flex-start; background: #e2e8f0; color: var(--color-text-main);">
+                style="justify-content: flex-start; background: var(--color-border); color: var(--color-text-main);">
                 &#128736; Admin Dashboard
             </a>
             {% endif %}

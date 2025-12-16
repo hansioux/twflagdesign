@@ -39,10 +39,12 @@
                         design.description | format_content }}</p>
 
                     {% if current_user.is_authenticated and (current_user == design.author or current_user.is_admin) %}
-                    <div style="margin-top: 1rem;">
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
                         <a href="{{ url_for('main.edit_design', public_id=design.public_id) }}" class="btn"
                             style="padding: 0.5rem 1rem; border: 1px solid var(--color-border); font-size: 0.875rem;">Edit
                             Design</a>
+                        <a href="{{ url_for('main.delete_design', public_id=design.public_id) }}" class="btn"
+                            style="padding: 0.5rem 1rem; border: 1px solid #fee2e2; background: #fee2e2; color: #dc2626; font-size: 0.875rem; text-decoration: none;">Delete</a>
                     </div>
                     {% endif %}
                 </div>
@@ -70,7 +72,7 @@
                         style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
                         {% endif %}
                         <button type="submit" name="rating_value" value="{{ i }}" class="btn"
-                            style="padding: 0.5rem; border: 1px solid var(--color-border); font-size: 0.875rem; {{ 'background-color: var(--color-accent); color: white;' if user_rating == i else 'background: var(--color-background);' }}">
+                            style="padding: 0.5rem; border: 1px solid var(--color-border); font-size: 0.875rem; {{ 'background-color: var(--color-accent); color: white;' if user_rating == i else 'background: var(--color-background); color: var(--color-text-main);' }}">
                             {{ i }}
                         </button>
                         {% endfor %}
@@ -105,6 +107,8 @@
                         current_user.is_admin) %}
                         <a href="{{ url_for('main.edit_comment', comment_id=comment.id) }}"
                             style="font-size: 0.8rem; color: var(--color-accent);">Edit</a>
+                        <a href="{{ url_for('main.delete_comment', comment_id=comment.id) }}"
+                            style="color: #dc2626; font-size: 0.8rem; text-decoration: underline;">Delete</a>
                         {% endif %}
                     </div>
                 </div>
