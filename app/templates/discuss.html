@@ -98,7 +98,7 @@
                         post.title }}</h2>
                     <p
                         style="color: var(--color-text-main); margin-bottom: 1rem; line-height: 1.6; white-space: pre-wrap;">
-                        {{ post.content | format_content }}</p>
+                        {{- post.content | format_content -}}</p>
 
                     {% if post.image_filename %}
                     <div style="margin-bottom: 1rem;">
