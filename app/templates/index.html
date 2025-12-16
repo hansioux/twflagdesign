@@ -12,6 +12,10 @@
             {{ tag }} <span style="font-size: 0.8em; opacity: 0.7;">({{ count }})</span>
         </a>
         {% endfor %}
+        <a href="{{ url_for('main.hashtags') }}"
+            style="text-decoration: none; color: var(--color-text-muted); padding: 0.25rem 0.75rem; font-size: 0.9rem; font-weight: 500; transition: color 0.2s;">
+            More...
+        </a>
     </div>
 
     <!-- Search Bar -->

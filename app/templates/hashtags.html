@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1
+            style="font-family: var(--font-heading); font-size: 2.5rem; margin-bottom: 1rem; color: var(--color-primary);">
+            All Hashtags</h1>
+        <p style="color: var(--color-text-muted); margin-bottom: 2rem;">Explore designs by topic</p>
+
+        <div style="margin-bottom: 2rem;">
+            <a href="{{ url_for('main.index') }}" class="btn"
+                style="border: 1px solid var(--color-border); background: var(--color-surface);">&larr; Back to
+                Gallery</a>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 2rem;">
+        {% if all_tags %}
+        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
+            {% for tag, count in all_tags %}
+            <a href="{{ url_for('main.index', q=tag) }}"
+                style="text-decoration: none; color: #0f172a; background: #e0f2fe; padding: 0.5rem 1rem; border-radius: 999px; font-size: {{ 0.9 + (count * 0.05) if count < 10 else 1.4 }}rem; font-weight: 500; transition: transform 0.2s, background 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;">
+                {{ tag }}
+                <span
+                    style="font-size: 0.7em; background: rgba(0,0,0,0.1); padding: 0.1em 0.4em; border-radius: 999px;">{{
+                    count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align: center; color: var(--color-text-muted);">No hashtags found yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

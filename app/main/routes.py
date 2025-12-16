@@ -53,6 +53,24 @@ def index():
     
     return render_template('index.html', designs=designs, search_query=q, top_tags=top_tags)
 
+@bp.route('/hashtags')
+def hashtags():
+    # Calculate all hashtags from all approved designs
+    all_designs = Design.query.filter_by(approved=True).all()
+    tag_counts = Counter()
+    for d in all_designs:
+        if d.hashtags:
+            # Split and clean tags
+            tags = d.hashtags.lower().split()
+            tag_counts.update(tags)
+            
+    # Sort by count desc, then alphabetical
+    # most_common() returns list of (elem, count) sorted by count.
+    # We might want secondary sort by name if counts are equal, but most_common is stable.
+    all_tags = tag_counts.most_common()
+    
+    return render_template('hashtags.html', all_tags=all_tags)
+
 @bp.route('/submit', methods=['GET', 'POST'])
 @login_required
 def submit():
@@ -353,6 +371,7 @@ def convert_post_to_design(post_id):
         image_filename=post.image_filename,
         author=post.author,
         created_at=post.created_at,
+        hashtags='#Converted',
         approved=True # Admin action implies approval
     )
     db.session.add(design)
