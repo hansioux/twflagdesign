@@ -2,7 +2,7 @@ import os
 import uuid
 import re
 from collections import Counter
-from flask import render_template, request, redirect, url_for, flash, current_app
+from flask import render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app import db
@@ -70,6 +70,20 @@ def hashtags():
     all_tags = tag_counts.most_common()
     
     return render_template('hashtags.html', all_tags=all_tags)
+
+@bp.route('/api/hashtags')
+def api_hashtags():
+    # Helper to clean tags
+    def get_tags():
+        all_designs = Design.query.filter_by(approved=True).all()
+        unique_tags = set()
+        for d in all_designs:
+            if d.hashtags:
+                tags = d.hashtags.lower().split()
+                unique_tags.update(tags)
+        return sorted(list(unique_tags))
+        
+    return jsonify(get_tags())
 
 @bp.route('/submit', methods=['GET', 'POST'])
 @login_required
