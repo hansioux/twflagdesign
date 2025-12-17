@@ -1,43 +1,34 @@
 {% extends "layout.html" %}
 
+{% block scripts %}
+<script>
+    function toggleFilters() {
+        const panel = document.getElementById('filterPanel');
+        const arrow = document.getElementById('filterArrow');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            arrow.textContent = '▲';
+        } else {
+            panel.style.display = 'none';
+            arrow.textContent = '▼';
+        }
+    }
+    // Auto-expand if filters are active (optional, but good UX)
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('rating') || urlParams.has('q')) {
+            // Maybe expand if search/rating is present?
+            // User didn't ask for auto-expand, but it might be helpful.
+            // Let's stick to default hidden as requested "Clicking the Filter button will show..."
+        }
+    });
+</script>
+{% endblock %}
+
 {% block content %}
 <div style="text-align: center; margin-bottom: 3rem;">
 
-    <div
-        style="margin: 0 auto; max-width: 800px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
-        {% for tag, count in top_tags %}
-        <a href="{{ url_for('main.index', q=tag) }}"
-            style="text-decoration: none; color: #0f172a; background: #e0f2fe; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.9rem; font-weight: 500; transition: background 0.2s;">
-            {{ tag }} <span style="font-size: 0.8em; opacity: 0.7;">({{ count }})</span>
-        </a>
-        {% endfor %}
-        <a href="{{ url_for('main.hashtags') }}"
-            style="text-decoration: none; color: var(--color-text-muted); padding: 0.25rem 0.75rem; font-size: 0.9rem; font-weight: 500; transition: color 0.2s;">
-            More...
-        </a>
-    </div>
 
-    <!-- Rating Filter -->
-    <div
-        style="margin-top: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-        <span style="font-size: 0.9rem; color: var(--color-text-muted);">Filter by Rating:</span>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-            <a href="{{ url_for('main.index', q=search_query, sort=sort_by) }}"
-                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if not rating_filter else 'background: var(--color-background); color: var(--color-text-main);' }}">
-                All
-            </a>
-            <a href="{{ url_for('main.index', q=search_query, sort=sort_by, rating='unrated') }}"
-                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if rating_filter == 'unrated' else 'background: var(--color-background); color: var(--color-text-main);' }}">
-                Unrated
-            </a>
-            {% for i in range(1, 11) %}
-            <a href="{{ url_for('main.index', q=search_query, sort=sort_by, rating=i) }}"
-                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if rating_filter == i|string else 'background: var(--color-background); color: var(--color-text-main);' }}">
-                {{ i }}
-            </a>
-            {% endfor %}
-        </div>
-    </div>
 
     <!-- Search Bar -->
     <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
@@ -49,6 +40,12 @@
             {% endif %}
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
+
+        <button type="button" onclick="toggleFilters()" class="btn"
+            style="background: var(--color-background); border: 1px solid var(--color-border); color: var(--color-text-main); padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>Filters</span>
+            <span id="filterArrow">▼</span>
+        </button>
 
         <div style="display: flex; gap: 0.5rem; align-items: center;">
             <span style="font-size: 0.9rem; color: var(--color-text-muted);">Sort by:</span>
@@ -65,6 +62,46 @@
             </div>
         </div>
     </div>
+
+    <!-- Filter Panel (Moved Outside) -->
+    <div id="filterPanel" style="display: none; transition: all 0.3s ease; margin-top: 1.5rem;">
+        <div
+            style="margin: 0 auto; max-width: 800px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
+            {% for tag, count in top_tags %}
+            <a href="{{ url_for('main.index', q=tag) }}"
+                style="text-decoration: none; color: #0f172a; background: #e0f2fe; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.9rem; font-weight: 500; transition: background 0.2s;">
+                {{ tag }} <span style="font-size: 0.8em; opacity: 0.7;">({{ count }})</span>
+            </a>
+            {% endfor %}
+            <a href="{{ url_for('main.hashtags') }}"
+                style="text-decoration: none; color: var(--color-text-muted); padding: 0.25rem 0.75rem; font-size: 0.9rem; font-weight: 500; transition: color 0.2s;">
+                More...
+            </a>
+        </div>
+
+        <!-- Rating Filter -->
+        <div
+            style="margin-top: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+            <span style="font-size: 0.9rem; color: var(--color-text-muted);">Filter by Rating:</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                <a href="{{ url_for('main.index', q=search_query, sort=sort_by) }}"
+                    style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if not rating_filter else 'background: var(--color-background); color: var(--color-text-main);' }}">
+                    All
+                </a>
+                <a href="{{ url_for('main.index', q=search_query, sort=sort_by, rating='unrated') }}"
+                    style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if rating_filter == 'unrated' else 'background: var(--color-background); color: var(--color-text-main);' }}">
+                    Unrated
+                </a>
+                {% for i in range(1, 11) %}
+                <a href="{{ url_for('main.index', q=search_query, sort=sort_by, rating=i) }}"
+                    style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if rating_filter == i|string else 'background: var(--color-background); color: var(--color-text-main);' }}">
+                    {{ i }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
