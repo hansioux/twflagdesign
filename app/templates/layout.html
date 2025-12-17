@@ -71,7 +71,12 @@
 <body>
     <nav class="navbar">
         <div class="container nav-container">
-            <a href="{{ url_for('main.index') }}" class="nav-logo">TW Flag Design</a>
+            <a href="{{ url_for('main.index') }}" class="nav-logo"
+                style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"
+                    style="height: 40px; width: auto;">
+                TW Flag Design
+            </a>
 
             <div class="nav-links">
                 <a href="{{ url_for('main.index') }}" class="nav-item">Gallery</a>
