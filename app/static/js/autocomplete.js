@@ -17,8 +17,9 @@ const Autocomplete = {
         suggestionBox.className = 'autocomplete-suggestions';
         suggestionBox.style.cssText = `
             position: absolute;
-            background: white;
-            border: 1px solid #ccc;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            color: var(--color-text-main);
             border-radius: 4px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: none;
@@ -95,10 +96,10 @@ const Autocomplete = {
             div.className = 'suggestion-item';
 
             // Hover effect
-            div.onmouseover = () => { div.style.background = '#f1f5f9'; };
-            div.onmouseout = () => { div.style.background = 'white'; };
+            div.onmouseover = () => { div.style.background = 'var(--color-border)'; };
+            div.onmouseout = () => { div.style.background = 'var(--color-surface)'; };
 
-            if (index === 0) div.style.background = '#e0f2fe'; // Highlight first
+            if (index === 0) div.style.background = 'var(--color-border)'; // Highlight first
 
             div.onclick = () => this.applyTag(tag, input, box);
             box.appendChild(div);
