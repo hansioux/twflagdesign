@@ -2,8 +2,7 @@
 
 {% block content %}
 <div style="text-align: center; margin-bottom: 3rem;">
-    <h1 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 1rem; color: var(--color-primary);">TW
-        Flag Design Gallery</h1>
+
     <div
         style="margin: 0 auto; max-width: 800px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
         {% for tag, count in top_tags %}
@@ -18,22 +17,53 @@
         </a>
     </div>
 
+    <!-- Rating Filter -->
+    <div
+        style="margin-top: 1.5rem; margin-bottom: 2rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+        <span style="font-size: 0.9rem; color: var(--color-text-muted);">Filter by Rating:</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+            <a href="{{ url_for('main.index', q=search_query, sort=sort_by) }}"
+                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if not rating_filter else 'background: var(--color-background); color: var(--color-text-main);' }}">
+                All
+            </a>
+            <a href="{{ url_for('main.index', q=search_query, sort=sort_by, rating='unrated') }}"
+                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if rating_filter == 'unrated' else 'background: var(--color-background); color: var(--color-text-main);' }}">
+                Unrated
+            </a>
+            {% for i in range(1, 11) %}
+            <a href="{{ url_for('main.index', q=search_query, sort=sort_by, rating=i) }}"
+                style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-radius: 4px; text-decoration: none; border: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if rating_filter == i|string else 'background: var(--color-background); color: var(--color-text-main);' }}">
+                {{ i }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
     <!-- Search Bar -->
-    <div style="margin-top: 2rem; display: flex; justify-content: center;">
-        <form action="{{ url_for('main.index') }}" method="GET"
-            style="display: flex; max-width: 500px; width: 100%; gap: 0.5rem;">
-            <input type="text" name="q" placeholder="Search by title, description, or #hashtags"
-                value="{{ search_query or '' }}"
-                style="flex-grow: 1; padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
-            <button type="submit" class="btn btn-primary"
-                style="display: flex; align-items: center; justify-content: center; padding: 0 1.25rem;">
-                <span style="font-size: 1.2rem;">🔍</span>
-            </button>
-            {% if search_query %}
-            <a href="{{ url_for('main.index') }}" class="btn"
-                style="background: var(--color-border); color: var(--color-text-main); display: flex; align-items: center;">Clear</a>
+    <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <form action="{{ url_for('main.index') }}" method="GET" style="flex-grow: 1; display: flex; gap: 0.5rem;">
+            <input type="text" name="q" placeholder="Search designs..." value="{{ search_query or '' }}"
+                style="flex-grow: 1; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-background); color: var(--color-text-main);">
+            {% if request.args.get('sort') %}
+            <input type="hidden" name="sort" value="{{ request.args.get('sort') }}">
             {% endif %}
+            <button type="submit" class="btn btn-primary">Search</button>
         </form>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <span style="font-size: 0.9rem; color: var(--color-text-muted);">Sort by:</span>
+            <div
+                style="display: flex; background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden;">
+                <a href="{{ url_for('main.index', sort='newest', q=search_query) }}"
+                    style="padding: 0.5rem 1rem; text-decoration: none; font-size: 0.9rem; {{ 'background: var(--color-accent); color: white;' if sort_by != 'top' else 'color: var(--color-text-muted); hover: background: var(--color-surface);' }}">
+                    Newest
+                </a>
+                <a href="{{ url_for('main.index', sort='top', q=search_query) }}"
+                    style="padding: 0.5rem 1rem; text-decoration: none; font-size: 0.9rem; border-left: 1px solid var(--color-border); {{ 'background: var(--color-accent); color: white;' if sort_by == 'top' else 'color: var(--color-text-muted);' }}">
+                    Top Rated
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 

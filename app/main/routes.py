@@ -10,7 +10,8 @@ from app.main import bp
 from app.models import Design, Comment, Rating, Post, User
 from app.models import Design, Comment, Rating, Post, User
 from flask import abort
-from sqlalchemy import or_
+from flask import abort
+from sqlalchemy import or_, func
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -29,6 +30,9 @@ def format_content(text):
 @bp.route('/')
 def index():
     q = request.args.get('q')
+    sort_by = request.args.get('sort', 'newest')
+    rating_filter = request.args.get('rating')
+    
     query = Design.query.filter_by(approved=True)
     
     if q:
@@ -39,7 +43,27 @@ def index():
             Design.hashtags.ilike(search_term)
         ))
         
-    designs = query.order_by(Design.created_at.desc()).all()
+    # Join if we need to sort by rating OR filter by rating
+    if sort_by == 'top' or rating_filter:
+        query = query.outerjoin(Design.ratings).group_by(Design.id)
+        
+    if rating_filter:
+        if rating_filter == 'unrated':
+            query = query.having(func.count(Rating.id) == 0)
+        else:
+            try:
+                r_val = int(rating_filter)
+                query = query.having(func.round(func.avg(Rating.value)) == r_val)
+            except ValueError:
+                pass
+
+    if sort_by == 'top':
+        query = query.order_by(func.avg(Rating.value).desc())
+    else:
+        # Default newest
+        query = query.order_by(Design.created_at.desc())
+        
+    designs = query.all()
     
     # Calculate top hashtags from all approved designs
     all_designs = Design.query.filter_by(approved=True).all()
@@ -51,7 +75,7 @@ def index():
             
     top_tags = tag_counts.most_common(5)
     
-    return render_template('index.html', designs=designs, search_query=q, top_tags=top_tags)
+    return render_template('index.html', designs=designs, search_query=q, top_tags=top_tags, sort_by=sort_by, rating_filter=rating_filter)
 
 @bp.route('/hashtags')
 def hashtags():
