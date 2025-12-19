@@ -38,15 +38,43 @@
                     <p style="line-height: 1.7; color: var(--color-text-main); white-space: pre-wrap;">{{
                         design.description | format_content }}</p>
 
-                    {% if current_user.is_authenticated and (current_user == design.author or current_user.is_admin) %}
-                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center;">
+                        <button onclick="shareDesign(this)" class="btn"
+                            style="padding: 0.5rem 1rem; border: 1px solid var(--color-border); font-size: 0.875rem; background: var(--color-surface); color: var(--color-text-main); cursor: pointer;">
+                            Share
+                        </button>
+
+                        {% if current_user.is_authenticated and (current_user == design.author or current_user.is_admin)
+                        %}
                         <a href="{{ url_for('main.edit_design', public_id=design.public_id) }}" class="btn"
-                            style="padding: 0.5rem 1rem; border: 1px solid var(--color-border); font-size: 0.875rem;">Edit
+                            style="padding: 0.5rem 1rem; border: 1px solid var(--color-border); font-size: 0.875rem; text-decoration: none;">Edit
                             Design</a>
                         <a href="{{ url_for('main.delete_design', public_id=design.public_id) }}" class="btn"
                             style="padding: 0.5rem 1rem; border: 1px solid #fee2e2; background: #fee2e2; color: #dc2626; font-size: 0.875rem; text-decoration: none;">Delete</a>
+                        {% endif %}
                     </div>
-                    {% endif %}
+
+                    <script>
+                        function shareDesign(btn) {
+                            navigator.clipboard.writeText(window.location.href).then(() => {
+                                const originalText = btn.textContent;
+                                btn.textContent = 'Copied!';
+                                btn.style.background = 'var(--color-success)';
+                                btn.style.color = 'white';
+                                btn.style.borderColor = 'var(--color-success)';
+
+                                setTimeout(() => {
+                                    btn.textContent = originalText;
+                                    btn.style.background = 'var(--color-surface)';
+                                    btn.style.color = 'var(--color-text-main)';
+                                    btn.style.borderColor = 'var(--color-border)';
+                                }, 2000);
+                            }).catch(err => {
+                                console.error('Failed to copy: ', err);
+                                alert('Failed to copy link.');
+                            });
+                        }
+                    </script>
                 </div>
             </div>
         </div>

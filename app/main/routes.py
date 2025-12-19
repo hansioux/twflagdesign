@@ -63,9 +63,15 @@ def index():
         # Default newest
         query = query.order_by(Design.created_at.desc())
         
-    designs = query.all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    designs = pagination.items
+
+    if request.args.get('ajax'):
+        return render_template('partials_design_list.html', designs=designs)
     
-    # Calculate top hashtags from all approved designs
+    # Calculate top hashtags from all approved designs (cache this in production!)
     all_designs = Design.query.filter_by(approved=True).all()
     tag_counts = Counter()
     for d in all_designs:
@@ -75,7 +81,7 @@ def index():
             
     top_tags = tag_counts.most_common(5)
     
-    return render_template('index.html', designs=designs, search_query=q, top_tags=top_tags, sort_by=sort_by, rating_filter=rating_filter)
+    return render_template('index.html', designs=designs, search_query=q, top_tags=top_tags, sort_by=sort_by, rating_filter=rating_filter, pagination=pagination)
 
 @bp.route('/hashtags')
 def hashtags():
