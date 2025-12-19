@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Activate virtual environment
-source venv/bin/activate
+# source venv/bin/activate
+# export UV=''
+export UV='uv run'
 
 # Set environment variables (if not already set globally)
 # You should ideally load these from a secure .env file using python-dotenv or similar in production
@@ -18,7 +20,9 @@ if [ -z "$GOOGLE_CLIENT_ID" ] || [ -z "$GOOGLE_CLIENT_SECRET" ]; then
 fi
 
 # Run Gunicorn
-# -w 4: 4 worker processes
-# -b 0.0.0.0:8000: bind to all interfaces on port 8000
-echo "Starting TW Flag Design App with Gunicorn on port 8000..."
-exec gunicorn -w 4 -b 0.0.0.0:8000 "app:create_app()"
+# -w 3: 3 worker processes (good for 1-2 cores)
+# --threads 4: 4 threads per worker (handles I/O blocking like uploads better)
+# --worker-class gthread: Use threaded workers
+# --timeout 60: Increase timeout for image uploads (60 seconds)
+echo "Starting TW Flag Design App with Gunicorn (Threaded) on port 8000..."
+exec $UV gunicorn -w 3 --threads 4 --worker-class gthread --timeout 60 -b 0.0.0.0:8000 "app:create_app()"
