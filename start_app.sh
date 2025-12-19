@@ -25,4 +25,8 @@ fi
 # --worker-class gthread: Use threaded workers
 # --timeout 60: Increase timeout for image uploads (60 seconds)
 echo "Starting TW Flag Design App with Gunicorn (Threaded) on port 8000..."
-exec $UV gunicorn -w 3 --threads 4 --worker-class gthread --timeout 60 -b 0.0.0.0:8000 "app:create_app()"
+cd src
+exec $UV gunicorn -w 3 --threads 4 --worker-class gthread --timeout 60 \
+    --access-logfile ../log/gunicorn-access.log \
+    --error-logfile ../log/gunicorn-error.log \
+    -b 0.0.0.0:8000 "app:create_app()"

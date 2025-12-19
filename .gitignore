@@ -1,5 +1,7 @@
 # Logs
-*.log
+log/*
+# *.log # Removed root wildcard to avoid ignoring important files if any, but actually it's safer to keep log/* only
+
 
 # Python cache
 __pycache__/

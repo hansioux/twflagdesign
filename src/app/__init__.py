@@ -40,4 +40,22 @@ def create_app(config_class=Config):
     # from app.designs import bp as designs_bp
     # app.register_blueprint(designs_bp)
 
+    # Logging Configuration
+    if not app.debug:
+        import logging
+        from logging.handlers import RotatingFileHandler
+        import os
+
+        if not os.path.exists('../log'):
+            os.mkdir('../log')
+        
+        file_handler = RotatingFileHandler('../log/flask.log', maxBytes=10240, backupCount=10)
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
+
+        app.logger.setLevel(logging.INFO)
+        app.logger.info('TW Flag Design startup')
+
     return app
