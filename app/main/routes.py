@@ -576,3 +576,6 @@ def delete_comment(comment_id):
     if design_public_id:
         return redirect(url_for('main.design_detail', public_id=design_public_id))
     return redirect(url_for('main.discuss'))
+@bp.app_errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404

@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div
+    style="min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="TW Flag Design Logo"
+        style="max-width: 200px; margin-bottom: 2rem;">
+
+    <h1 style="font-size: 4rem; margin: 0; color: var(--color-primary); line-height: 1;">404</h1>
+    <h2 style="margin-bottom: 1.5rem; color: var(--color-text-main);">Page Not Found</h2>
+
+    <p style="color: var(--color-text-muted); margin-bottom: 2rem; max-width: 400px;">
+        The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+    </p>
+
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary" style="padding: 0.75rem 2rem; font-size: 1.1rem;">
+        Back to Gallery
+    </a>
+</div>
+{% endblock %}

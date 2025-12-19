@@ -54,14 +54,32 @@ const Autocomplete = {
     },
 
     handleInput: function (e, input, box) {
-        const val = input.value;
-        const cursor = input.selectionStart;
+        let val = input.value;
+        let cursor = input.selectionStart;
 
         // Find current word being typed
         // Look backwards from cursor until space or start
-        const textBefore = val.slice(0, cursor);
+        let textBefore = val.slice(0, cursor);
         const lastSpace = textBefore.lastIndexOf(' ');
-        const currentWord = textBefore.slice(lastSpace + 1);
+        let currentWord = textBefore.slice(lastSpace + 1);
+
+        if (currentWord.length > 0 && !currentWord.startsWith('#')) {
+            // Auto-prepend #
+            const beforeWord = textBefore.slice(0, lastSpace + 1);
+            const newTextBefore = beforeWord + '#' + currentWord;
+            const textAfter = val.slice(cursor);
+
+            input.value = newTextBefore + textAfter;
+
+            // Adjust cursor
+            cursor += 1;
+            input.setSelectionRange(cursor, cursor);
+
+            // Update local vars for filtering
+            val = input.value;
+            textBefore = newTextBefore;
+            currentWord = '#' + currentWord;
+        }
 
         if (currentWord.length < 1) {
             box.style.display = 'none';
