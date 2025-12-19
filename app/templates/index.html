@@ -129,69 +129,72 @@
 </style>
 
 <script>
-    let page = 1;
-    let hasNext = {{ 'true' if pagination.has_next else 'false' }};
-    const sentinel = document.getElementById('sentinel');
-    const grid = document.getElementById('design-grid');
+    document.addEventListener("DOMContentLoaded", function () {
+        let page = 1;
+        // Use string comparison to avoid linter confusion with Jinja syntax
+        let hasNext = "{{ 'true' if pagination.has_next else 'false' }}" === "true";
+        const sentinel = document.getElementById('sentinel');
+        const grid = document.getElementById('design-grid');
 
-    const loadMore = (entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && hasNext) {
-                sentinel.style.opacity = 1; // Show loading
-                page++;
+        const loadMore = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && hasNext) {
+                    sentinel.style.opacity = 1; // Show loading
+                    page++;
 
-                // Construct URL with current search/filter params
-                const urlParams = new URLSearchParams(window.location.search);
-                urlParams.set('page', page);
-                urlParams.set('ajax', 1);
+                    // Construct URL with current search/filter params
+                    const urlParams = new URLSearchParams(window.location.search);
+                    urlParams.set('page', page);
+                    urlParams.set('ajax', 1);
 
-                fetch(`{{ url_for('main.index') }}?${urlParams.toString()}`)
-                    .then(response => response.text())
-                    .then(html => {
-                        if (html.trim().length === 0) {
-                            hasNext = false;
-                            sentinel.style.display = 'none';
-                            return;
-                        }
+                    fetch(`{{ url_for('main.index') }}?${urlParams.toString()}`)
+                        .then(response => response.text())
+                        .then(html => {
+                            if (html.trim().length === 0) {
+                                hasNext = false;
+                                sentinel.style.display = 'none';
+                                return;
+                            }
 
-                        // Append new cards
-                        // Create a temporary container to parse HTML? 
-                        // Or just insert adjacentHTML
-                        grid.insertAdjacentHTML('beforeend', html);
+                            // Append new cards
+                            // Create a temporary container to parse HTML? 
+                            // Or just insert adjacentHTML
+                            grid.insertAdjacentHTML('beforeend', html);
 
-                        // Check if we reached the end (backend doesn't easily tell us "no more" via just html, 
-                        // but if we get less than batch size? or purely rely on backend state if we returned it JSON)
-                        // For now simples: assume if we got content, there might be more, UNLESS the backend returned empty.
-                        // Ideally backend sends has_next in header or wrapped JSON.
-                        // Simpler approach for HTML frag: 
-                        // We rely on the initial 'pagination.has_next' to start. 
-                        // But subsequent pages? 
-                        // Let's infer: if html is empty, stop.
-                        // Actually, calculating hasNext from just HTML frag is hard.
-                        // Let's stay robust: If the response is empty, stop.
-                        if (html.trim() === '') {
-                            hasNext = false;
-                            sentinel.style.display = 'none';
-                        }
+                            // Check if we reached the end (backend doesn't easily tell us "no more" via just html, 
+                            // but if we get less than batch size? or purely rely on backend state if we returned it JSON)
+                            // For now simples: assume if we got content, there might be more, UNLESS the backend returned empty.
+                            // Ideally backend sends has_next in header or wrapped JSON.
+                            // Simpler approach for HTML frag: 
+                            // We rely on the initial 'pagination.has_next' to start. 
+                            // But subsequent pages? 
+                            // Let's infer: if html is empty, stop.
+                            // Actually, calculating hasNext from just HTML frag is hard.
+                            // Let's stay robust: If the response is empty, stop.
+                            if (html.trim() === '') {
+                                hasNext = false;
+                                sentinel.style.display = 'none';
+                            }
 
-                        sentinel.style.opacity = 0;
-                    })
-                    .catch(err => {
-                        console.error('Error loading designs:', err);
-                        sentinel.style.opacity = 0;
-                    });
-            }
+                            sentinel.style.opacity = 0;
+                        })
+                        .catch(err => {
+                            console.error('Error loading designs:', err);
+                            sentinel.style.opacity = 0;
+                        });
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(loadMore, {
+            rootMargin: '100px', // Load slightly before reaching bottom
         });
-    };
 
-    const observer = new IntersectionObserver(loadMore, {
-        rootMargin: '100px', // Load slightly before reaching bottom
+        if (hasNext) {
+            observer.observe(sentinel);
+        } else {
+            sentinel.style.display = 'none';
+        }
     });
-
-    if (hasNext) {
-        observer.observe(sentinel);
-    } else {
-        sentinel.style.display = 'none';
-    }
 </script>
 {% endblock %}
