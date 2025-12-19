@@ -16,5 +16,6 @@ gplus/
 
 # Google Cloud credentials
 start_app_cred.sh
+.env
 app/auth/gcloud.json 
 src/app/auth/gcloud.json 
