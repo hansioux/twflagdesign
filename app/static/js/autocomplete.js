@@ -5,6 +5,8 @@
 
 const Autocomplete = {
     tags: [],
+    selectedIndex: -1,
+    matches: [],
 
     // Initialize for specific input ID
     init: function (inputId) {
@@ -67,13 +69,13 @@ const Autocomplete = {
         }
 
         // Filter tags
-        const matches = this.tags.filter(t =>
+        this.matches = this.tags.filter(t =>
             t.toLowerCase().startsWith(currentWord.toLowerCase()) &&
             t.toLowerCase() !== currentWord.toLowerCase() // Don't suggest exact match if completed?
         );
 
-        if (matches.length > 0) {
-            this.showSuggestions(matches, input, box, currentWord);
+        if (this.matches.length > 0) {
+            this.showSuggestions(this.matches, input, box, currentWord);
         } else {
             box.style.display = 'none';
         }
@@ -88,6 +90,7 @@ const Autocomplete = {
         box.style.display = 'block';
 
         box.innerHTML = '';
+        this.selectedIndex = 0;
         matches.forEach((tag, index) => {
             const div = document.createElement('div');
             div.textContent = tag;
@@ -125,17 +128,46 @@ const Autocomplete = {
     },
 
     handleKeydown: function (e, input, box) {
-        if (box.style.display === 'block') {
-            if (e.key === 'Tab' || e.key === 'Enter') {
-                e.preventDefault();
-                // Select first suggestion
-                const first = box.querySelector('.suggestion-item');
-                if (first) {
-                    first.click();
-                }
-            } else if (e.key === 'Escape') {
-                box.style.display = 'none';
-            }
+        if (box.style.display === 'none') {
+            // If Enter is pressed while box is hidden, do nothing special (allow form submit)
+            return;
         }
-    }
+
+        const items = box.querySelectorAll('.suggestion-item');
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.selectedIndex++;
+            if (this.selectedIndex >= items.length) this.selectedIndex = 0;
+            this.updateSelection(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.selectedIndex--;
+            if (this.selectedIndex < 0) this.selectedIndex = items.length - 1;
+            this.updateSelection(items);
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
+            if (this.selectedIndex > -1) {
+                e.preventDefault();
+                this.applyTag(this.matches[this.selectedIndex], input, box);
+            }
+            // If nothing selected, let default behavior happen (e.g. submit form or next field)
+            // But if box is open, usually Enter selects first? 
+            // Current User request: "map the up and down arrow keys".
+            // Let's stick to explicit selection.
+        } else if (e.key === 'Escape') {
+            box.style.display = 'none';
+        }
+    },
+
+    updateSelection: function (items) {
+        items.forEach((item, index) => {
+            if (index === this.selectedIndex) {
+                item.style.background = 'var(--color-border)';
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.style.background = 'var(--color-surface)';
+            }
+        });
+    },
 };
